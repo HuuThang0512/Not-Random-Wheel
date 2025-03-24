@@ -135,38 +135,18 @@
       document.getElementById("spin").addEventListener("click", () => {
         if (isSpinning) return;
         isSpinning = true;
-        study = false;
 
-        let targetAngle;
-        if (spinCount === 0) {
-          // Lần 1: quay 90 độ (vào ô Nghỉ)
-          targetAngle = 76;
-        } else if (spinCount === 1) {
-          // Lần 2: quay về vị trí 0 (ô Học)
-          study = true;
-          targetAngle = 200; // Bạn có thể thay đổi giá trị này để điều chỉnh góc quay
-        } else {
-          // Từ lần 3 trở đi mới random
-          const randomIndex = Math.floor(Math.random() * totalSlices);
-          targetAngle = (360 / totalSlices) * randomIndex;
-        }
+        // Random góc quay
+        const randomIndex = Math.floor(Math.random() * totalSlices);
+        const targetAngle = (360 / totalSlices) * randomIndex;
 
-        spinCount++;
-        spinWheel(targetAngle, study);
+        spinWheel(targetAngle);
       });
 
-      function spinWheel(targetAngle, study = false) {
+      function spinWheel(targetAngle) {
         let startAngle = currentRotation;
-        // Tính góc cuối cùng đơn giản hơn
-        let finalAngle = startAngle + targetAngle;
-
-        // Thêm số vòng quay
-        if (spinCount <= 2) {
-          finalAngle += 360 * 2; // 2 vòng cho 2 lần đầu
-        } else {
-          finalAngle += 360 * 3; // 3 vòng cho các
-          // lần sau
-        }
+        // Tính góc cuối cùng với 3 vòng quay
+        let finalAngle = startAngle + targetAngle + 360 * 3;
 
         let speed = 20;
         let deceleration = 0.98;
@@ -182,11 +162,7 @@
             setTimeout(() => {
               isSpinning = false;
               const index = Math.floor((currentRotation / 360) * totalSlices);
-              if (study) {
-                alert(`Kết quả: Học`);
-              } else {
-                alert(`Kết quả: ${sections[index]}`);
-              }
+              alert(`Kết quả: ${sections[index]}`);
             }, 500);
 
             return;

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vòng quay may mắn</title>
+    <style>
+      body {
+        text-align: center;
+        background: #111;
+        color: white;
+      }
+      .container {
+        position: relative;
+        display: inline-block;
+        margin-top: 80px;
+      }
+      canvas {
+        border-radius: 50%;
+        background: black;
+        margin-top: 20px;
+        transform: scale(1.2);
+      }
+      .arrow {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%) rotate(180deg);
+        width: 0;
+        height: 0;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-bottom: 40px solid white;
+        z-index: 100;
+      }
+      #spin {
+        margin-top: 80px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Vòng quay hơi may mắn</h2>
+    <div class="container">
+      <div class="arrow"></div>
+      <canvas id="wheel" width="400" height="400"></canvas>
+    </div>
+    <br />
+    <button id="spin">Quay</button>
+
+    <script>
+      const canvas = document.getElementById("wheel");
+      const ctx = canvas.getContext("2d");
+      const totalSlices = 50;
+      let isSpinning = false;
+      let spinCount = 0;
+      let currentRotation = 0;
+
+      // Đặt cố định vị trí "Nghỉ" và "Học"
+      let sections = Array(50).fill("Nghỉ");
+      sections[0] = "Học"; // Đặt ô "Học" ở vị trí đầu tiên
+
+      function drawWheel(rotation = 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = canvas.width / 2 - 10;
+        const angleStep = (2 * Math.PI) / totalSlices;
+        const colors = ["red", "blue", "green", "yellow"];
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(rotation - Math.PI / 2);
+        ctx.translate(-centerX, -centerY);
+
+        for (let i = 0; i < totalSlices; i++) {
+          let startAngle = i * angleStep;
+          let endAngle = startAngle + angleStep;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.fill();
+          ctx.stroke();
+
+          // Vẽ text
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(startAngle + angleStep / 2);
+          ctx.fillStyle = "white";
+          ctx.font = "bold 14px Arial";
+          ctx.fillText(sections[i], radius - 50, 5);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      drawWheel();
+
+      document.getElementById("spin").addEventListener("click", () => {
+        if (isSpinning) return;
+        isSpinning = true;
+        study = false;
+
+        let targetAngle;
+        if (spinCount === 0) {
+          // Lần 1: quay 90 độ (vào ô Nghỉ)
+          targetAngle = 76;
+        } else if (spinCount === 1) {
+          // Lần 2: quay về vị trí 0 (ô Học)
+          study = true;
+          targetAngle = 200; // Bạn có thể thay đổi giá trị này để điều chỉnh góc quay
+        } else {
+          // Từ lần 3 trở đi mới random
+          const randomIndex = Math.floor(Math.random() * totalSlices);
+          targetAngle = (360 / totalSlices) * randomIndex;
+        }
+
+        spinCount++;
+        spinWheel(targetAngle, study);
+      });
+
+      function spinWheel(targetAngle, study = false) {
+        let startAngle = currentRotation;
+        // Tính góc cuối cùng đơn giản hơn
+        let finalAngle = startAngle + targetAngle;
+
+        // Thêm số vòng quay
+        if (spinCount <= 2) {
+          finalAngle += 360 * 2; // 2 vòng cho 2 lần đầu
+        } else {
+          finalAngle += 360 * 3; // 3 vòng cho các
+          // lần sau
+        }
+
+        let speed = 20;
+        let deceleration = 0.98;
+
+        function animate() {
+          startAngle += speed;
+          speed *= deceleration;
+
+          if (speed < 0.01) {
+            startAngle = finalAngle;
+            currentRotation = finalAngle % 360;
+
+            setTimeout(() => {
+              isSpinning = false;
+              const index = Math.floor((currentRotation / 360) * totalSlices);
+              if (study) {
+                alert(`Kết quả: Học`);
+              } else {
+                alert(`Kết quả: ${sections[index]}`);
+              }
+            }, 500);
+
+            return;
+          }
+
+          drawWheel((startAngle * Math.PI) / 180);
+          requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+    </script>
+  </body>
+</html>
